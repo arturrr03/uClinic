@@ -6,6 +6,7 @@ import Medic from "./src/pages/Medic";
 import Schedule from "./src/pages/Schedule";
 //components
 import Frame from "./src/components/Frame";
+import Profile from "./src/pages/Profile";
 
 
 const App  = () => {
@@ -27,6 +28,7 @@ const App  = () => {
         <Route path="/" element = {<Home/>}/>
         <Route path="/medic" element = {<Medic/>}/>
         <Route path="/schedule" element = {<Schedule/>}/>
+        <Route path="/profile" element ={<Profile/>}/>
         
       </Routes>
     </Frame>

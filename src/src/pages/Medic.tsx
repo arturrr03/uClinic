@@ -7,26 +7,27 @@ import {
   CardContent,
   TextField,
 } from "@mui/material";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import AddIcon from "@mui/icons-material/Add";
 
-interface RekamMedisItemProps {
-  nama: string;
-  keluhanList: string[];
-  onLihatClick?: () => void;
-  onTambahClick?: () => void;
+interface Patient {
+  id: number;
+  name: string;
+  complaint: string;
+  hasMedicalRecord: boolean;
+  medicalRecord: {
+    gender: string;
+    age: number;
+    description: string;
+  } | null;
 }
 
-const RekamMedisItem: React.FC<RekamMedisItemProps> = ({
-  nama,
-  keluhanList,
-  onLihatClick,
-  onTambahClick,
-}) => (
+const PatientCard: React.FC<{
+  patient: Patient;
+  onEdit: (patient: Patient) => void;
+}> = ({ patient, onEdit }) => (
   <Card
     sx={{
       mb: 2,
-      backgroundColor: keluhanList.length === 0 ? "#ffe0b2" : "#f5f5f5",
+      backgroundColor: patient.hasMedicalRecord ? "#f5f5f5" : "#ffcccc",
     }}
   >
     <CardContent
@@ -37,95 +38,141 @@ const RekamMedisItem: React.FC<RekamMedisItemProps> = ({
       }}
     >
       <Box>
-        <Typography variant="h6">{nama}</Typography>
+        <Typography variant="h6">{patient.name}</Typography>
         <Typography variant="body2" color="text.secondary">
-          {keluhanList.length === 0
-            ? "*Belum ada rekam medis"
-            : keluhanList.join(", ")}
+          {patient.complaint}
         </Typography>
-      </Box>
-      <Box>
-        {keluhanList.length === 0 ? (
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<AddIcon />}
-            size="small"
-            onClick={onTambahClick}
-          >
-            Tambahkan
-          </Button>
-        ) : (
-          <Button
-            variant="outlined"
-            color="primary"
-            startIcon={<VisibilityIcon />}
-            size="small"
-            onClick={onLihatClick}
-          >
-            Lihat
-          </Button>
+        {!patient.hasMedicalRecord && (
+          <Typography variant="body2" color="error">
+            *Belum ada rekam medis
+          </Typography>
         )}
       </Box>
+      <Button
+        variant={patient.hasMedicalRecord ? "outlined" : "contained"}
+        color={patient.hasMedicalRecord ? "primary" : "success"}
+        onClick={() => onEdit(patient)}
+      >
+        {patient.hasMedicalRecord ? "Lihat/Edit" : "Tambahkan"}
+      </Button>
     </CardContent>
   </Card>
 );
 
-const RekamMedisPage: React.FC = () => {
-  const [showForm, setShowForm] = useState(false);
-  const [formNama, setFormNama] = useState("");
-  const [rekamMedisData, setRekamMedisData] = useState([
-    { nama: "Richard Lahea", keluhanList: ["Sakit kepala", "Demam"] },
-    { nama: "Richard Lahea", keluhanList: ["Batuk"] },
-    { nama: "Richard Lahea", keluhanList: ["Pilek"] },
-    { nama: "John Doe", keluhanList: [] },
-  ]);
+const MedicalRecordForm: React.FC<{
+  patient: Patient;
+  onSave: (
+    id: number,
+    gender: string,
+    age: number,
+    description: string
+  ) => void;
+  onCancel: () => void;
+}> = ({ patient, onSave, onCancel }) => {
+  const [gender, setGender] = useState(patient.medicalRecord?.gender || "");
+  const [age, setAge] = useState(patient.medicalRecord?.age || 0);
+  const [description, setDescription] = useState(
+    patient.medicalRecord?.description || ""
+  );
 
-  const [formData, setFormData] = useState({
-    nama: "",
-    gender: "",
-    umur: "",
-    keluhan: "",
-  });
-
-  const handleLihatClick = (nama: string) => {
-    const data = rekamMedisData.find((item) => item.nama === nama);
-    if (data) {
-      setFormNama(nama);
-      setFormData({
-        nama: nama,
-        gender: "",
-        umur: "",
-        keluhan: data.keluhanList.join(", "),
-      });
-      setShowForm(true);
-    }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave(patient.id, gender, age, description);
   };
 
-  const handleFormSubmit = () => {
-    if (formNama) {
-      const updatedData = rekamMedisData.map((item) => {
-        if (item.nama === formNama) {
-          return {
-            ...item,
-            keluhanList: [...item.keluhanList, formData.keluhan],
-          };
-        }
-        return item;
-      });
-      setRekamMedisData(updatedData);
-    } else {
-      setRekamMedisData([
-        ...rekamMedisData,
-        {
-          nama: formData.nama,
-          keluhanList: [formData.keluhan],
-        },
-      ]);
-    }
-    setShowForm(false);
-    setFormData({ nama: "", gender: "", umur: "", keluhan: "" });
-    setFormNama("");
+  return (
+    <Card sx={{ mt: 2, p: 3 }}>
+      <Typography variant="h6" gutterBottom>
+        {patient.hasMedicalRecord
+          ? `Edit Rekam Medis - ${patient.name}`
+          : `Tambah Rekam Medis - ${patient.name}`}
+      </Typography>
+      <Box component="form" onSubmit={handleSubmit}>
+        <TextField
+          label="Gender"
+          fullWidth
+          margin="normal"
+          value={gender}
+          onChange={(e) => setGender(e.target.value)}
+          required
+        />
+        <TextField
+          label="Umur"
+          type="number"
+          fullWidth
+          margin="normal"
+          value={age}
+          onChange={(e) => setAge(Number(e.target.value))}
+          required
+        />
+        <TextField
+          label="Deskripsi"
+          fullWidth
+          margin="normal"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          required
+        />
+        <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={onCancel}
+            sx={{ mr: 2 }}
+          >
+            Batal
+          </Button>
+          <Button type="submit" variant="contained" color="primary">
+            Simpan
+          </Button>
+        </Box>
+      </Box>
+    </Card>
+  );
+};
+
+const Medic: React.FC = () => {
+  const [patients, setPatients] = useState<Patient[]>([
+    {
+      id: 1,
+      name: "Richard Lahea",
+      complaint: "Keluhan sakit",
+      hasMedicalRecord: true,
+      medicalRecord: {
+        gender: "Male",
+        age: 30,
+        description: "Sakit kepala berkepanjangan",
+      },
+    },
+    {
+      id: 2,
+      name: "John Doe",
+      complaint: "Keluhan sakit",
+      hasMedicalRecord: false,
+      medicalRecord: null,
+    },
+  ]);
+
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+
+  const handleSaveRecord = (
+    id: number,
+    gender: string,
+    age: number,
+    description: string
+  ) => {
+    setPatients((prev) =>
+      prev.map((patient) =>
+        patient.id === id
+          ? {
+              ...patient,
+              hasMedicalRecord: true,
+              medicalRecord: { gender, age, description },
+            }
+          : patient
+      )
+    );
+    setSelectedPatient(null);
   };
 
   return (
@@ -133,64 +180,19 @@ const RekamMedisPage: React.FC = () => {
       <Typography variant="h5" gutterBottom sx={{ fontWeight: "bold" }}>
         Rekam Medis
       </Typography>
-      {showForm ? (
-        <Card sx={{ mt: 2, p: 3 }}>
-          <Typography variant="h6" gutterBottom>
-            Formulir Rekam Medis - {formNama || formData.nama}
-          </Typography>
-          <TextField
-            label="Nama"
-            fullWidth
-            margin="normal"
-            value={formData.nama}
-            onChange={(e) => setFormData({ ...formData, nama: e.target.value })}
-          />
-          <TextField
-            label="Gender"
-            fullWidth
-            margin="normal"
-            value={formData.gender}
-            onChange={(e) =>
-              setFormData({ ...formData, gender: e.target.value })
-            }
-          />
-          <TextField
-            label="Umur"
-            fullWidth
-            margin="normal"
-            value={formData.umur}
-            onChange={(e) => setFormData({ ...formData, umur: e.target.value })}
-          />
-          <TextField
-            label="Keluhan"
-            fullWidth
-            margin="normal"
-            value={formData.keluhan}
-            onChange={(e) =>
-              setFormData({ ...formData, keluhan: e.target.value })
-            }
-          />
-          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleFormSubmit}
-            >
-              Tambahkan
-            </Button>
-          </Box>
-        </Card>
+      {selectedPatient ? (
+        <MedicalRecordForm
+          patient={selectedPatient}
+          onSave={handleSaveRecord}
+          onCancel={() => setSelectedPatient(null)}
+        />
       ) : (
         <Box sx={{ mt: 2 }}>
-          {rekamMedisData.map((item, index) => (
-            <RekamMedisItem
-              key={index}
-              {...item}
-              onLihatClick={() => handleLihatClick(item.nama)}
-              onTambahClick={() => {
-                setFormNama(item.nama);
-                setShowForm(true);
-              }}
+          {patients.map((patient) => (
+            <PatientCard
+              key={patient.id}
+              patient={patient}
+              onEdit={setSelectedPatient}
             />
           ))}
         </Box>
@@ -199,4 +201,4 @@ const RekamMedisPage: React.FC = () => {
   );
 };
 
-export default RekamMedisPage;
+export default Medic;

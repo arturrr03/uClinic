@@ -7,7 +7,7 @@ const Home = () => {
         fontFamily: "Arial, sans-serif",
         display: "flex",
         flexDirection: "column",
-        minHeight: "100vh", // Pastikan tinggi minimum adalah 100% dari viewport
+        minHeight: "100vh",
         background: "linear-gradient(to bottom, #e6f7ff, #ffffff)",
       }}
     >
@@ -30,7 +30,7 @@ const Home = () => {
 
       <main
         style={{
-          flex: 1, // Membuat konten utama fleksibel untuk mengisi ruang yang tersedia
+          flex: 1,
           padding: "20px",
           textAlign: "center",
         }}

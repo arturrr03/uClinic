@@ -4,37 +4,37 @@ import { ThemeProvider, createTheme } from "@mui/material";
 import Home from "./src/pages/Home";
 import Medic from "./src/pages/Medic";
 import Schedule from "./src/pages/Schedule";
+import Login from "./src/pages/Login";
 //components
 import Frame from "./src/components/Frame";
 import Profile from "./src/pages/Profile";
 
-
-const App  = () => {
+const App = () => {
   const theme = createTheme({
     typography: {
       fontFamily: ["Plus Jakarta Suns", "sans-serif"].join(","),
-      palette:{
-        //red: "#FFFFFF",
-      },
     },
-  })
+    palette: {
+      //red: "#FFFFFF",
+    },
+  });
+
   return (
     <ThemeProvider theme={theme}>
+      <BrowserRouter>
+        <Routes>
+          {/* Rute di dalam Frame */}
+          <Route path="/" element={<Frame><Home /></Frame>} />
+          <Route path="/medic" element={<Frame><Medic /></Frame>} />
+          <Route path="/schedule" element={<Frame><Schedule /></Frame>} />
+          <Route path="/profile" element={<Frame><Profile /></Frame>} />
 
-    <BrowserRouter>
-    <Frame>
-
-      <Routes>
-        <Route path="/" element = {<Home/>}/>
-        <Route path="/medic" element = {<Medic/>}/>
-        <Route path="/schedule" element = {<Schedule/>}/>
-        <Route path="/profile" element ={<Profile/>}/>
-        
-      </Routes>
-    </Frame>
-    </BrowserRouter>
+          {/* Rute di luar Frame */}
+          <Route path="/login" element={<Login />} />
+        </Routes>
+      </BrowserRouter>
     </ThemeProvider>
-  )
-}
+  );
+};
 
 export default App;

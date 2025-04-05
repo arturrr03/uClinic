@@ -8,14 +8,21 @@ import {
   CardContent,
   Divider,
 } from "@mui/material";
+import { useNavigate } from 'react-router-dom';
 
-const Profile = () => {
+const Profile: React.FC = () => {
+  const navigate = useNavigate();
   const user = {
     name: "Richard Lahea",
     email: "richard.lahea@example.com",
     phone: "+62 812-3456-7890",
     address: "Jl. Universitas Klabat No. 1, Airmadidi, Sulawesi Utara",
     avatar: "https://via.placeholder.com/150", // URL gambar avatar
+  };
+
+  const handleLogout = () => {
+    // Lakukan logika logout di sini jika diperlukan (misalnya, membersihkan token)
+    navigate('/login');
   };
 
   return (
@@ -81,7 +88,7 @@ const Profile = () => {
             <Button variant="contained" color="primary">
               Edit Profil
             </Button>
-            <Button variant="outlined" color="error">
+            <Button variant="outlined" color="error" onClick={handleLogout}>
               Logout
             </Button>
           </Box>

@@ -19,7 +19,7 @@ import ListItemText from '@mui/material/ListItemText';
 import EditCalendarIcon from '@mui/icons-material/EditCalendar';
 import MedicalInformationIcon from '@mui/icons-material/MedicalInformation';
 import HomeIcon from '@mui/icons-material/Home';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Avatar, Menu, MenuItem, Tooltip } from '@mui/material';
 import { Logout, Settings } from '@mui/icons-material';
 
@@ -88,6 +88,7 @@ export default function Frame({ children }) {
   const theme = useTheme();
   const [open, setOpen] = React.useState(true);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const profile = Boolean(anchorEl);
@@ -104,6 +105,11 @@ export default function Frame({ children }) {
 
   const handleDrawerClose = () => {
     setOpen(false);
+  };
+
+  const handleLogout = () => {
+    // Lakukan logika logout di sini jika diperlukan (misalnya, membersihkan token)
+    navigate('/login');
   };
 
   return (
@@ -180,19 +186,18 @@ export default function Frame({ children }) {
               transformOrigin={{ horizontal: 'right', vertical: 'top' }}
               anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
             >
-              <Link to={"/profile"} style={{ textDecoration: 'none', color : '' }}>
-              <MenuItem onClick={handleCloseProfile}>
-                <Avatar /> Profile
-              </MenuItem>
+              <Link to={"/profile"} style={{ textDecoration: 'none', color: 'inherit' }}>
+                <MenuItem onClick={handleCloseProfile}>
+                  <Avatar /> Profile
+                </MenuItem>
               </Link>
-
               <MenuItem onClick={handleCloseProfile}>
                 <ListItemIcon>
                   <Settings fontSize="small" />
                 </ListItemIcon>
                 Settings
               </MenuItem>
-              <MenuItem onClick={handleCloseProfile}>
+              <MenuItem onClick={() => { handleCloseProfile(); handleLogout(); }}>
                 <ListItemIcon>
                   <Logout fontSize="small" />
                 </ListItemIcon>

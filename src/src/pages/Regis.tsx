@@ -14,11 +14,11 @@ const Regis: React.FC = () => {
     console.log('Creating account with:', { nama, nim, email, password });
 
     // Setelah berhasil membuat akun, arahkan ke halaman login
-    navigate('/login');
+    navigate('/');
   };
 
   const handleBackToLogin = () => {
-    navigate('/login');
+    navigate('/');
   };
 
   return (

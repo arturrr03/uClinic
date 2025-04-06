@@ -109,7 +109,7 @@ export default function Frame({ children }) {
 
   const handleLogout = () => {
     // Lakukan logika logout di sini jika diperlukan (misalnya, membersihkan token)
-    navigate('/login');
+    navigate('/');
   };
 
   return (

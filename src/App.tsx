@@ -25,13 +25,13 @@ const App = () => {
       <BrowserRouter>
         <Routes>
           {/* Rute di dalam Frame */}
-          <Route path="/" element={<Frame><Home /></Frame>} />
+          <Route path="/home" element={<Frame><Home /></Frame>} />
           <Route path="/medic" element={<Frame><Medic /></Frame>} />
           <Route path="/schedule" element={<Frame><Schedule /></Frame>} />
           <Route path="/profile" element={<Frame><Profile /></Frame>} />
 
          
-          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<Login />} />
           <Route path= "/regis" element= {<Regis/>}/>
         </Routes>
       </BrowserRouter>

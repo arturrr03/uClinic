@@ -8,6 +8,7 @@ import Login from "./src/pages/Login";
 //components
 import Frame from "./src/components/Frame";
 import Profile from "./src/pages/Profile";
+import Regis from "./src/pages/Regis";
 
 const App = () => {
   const theme = createTheme({
@@ -29,8 +30,9 @@ const App = () => {
           <Route path="/schedule" element={<Frame><Schedule /></Frame>} />
           <Route path="/profile" element={<Frame><Profile /></Frame>} />
 
-          {/* Rute di luar Frame */}
+         
           <Route path="/login" element={<Login />} />
+          <Route path= "/regis" element= {<Regis/>}/>
         </Routes>
       </BrowserRouter>
     </ThemeProvider>

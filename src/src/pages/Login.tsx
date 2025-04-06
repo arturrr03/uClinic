@@ -16,6 +16,10 @@ const Login: React.FC = () => {
     navigate('/');
   };
 
+  const handleRegis = () => {
+    navigate('/regis');
+  };
+
   return (
     <div
       style={{
@@ -28,7 +32,7 @@ const Login: React.FC = () => {
         padding: '20px',
       }}
     >
-       <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '30px' }}>
         <img src={unklabClinicLogo} alt="UNKLAB CLINIC Logo" style={{ maxWidth: '200px', marginBottom: '10px' }} />
         <p style={{ fontSize: '0.9rem', color: '#6c757d' }}>Aplikasi Klinik Universitas Klabat</p>
       </div>
@@ -82,7 +86,7 @@ const Login: React.FC = () => {
             width: '100%',
             padding: '10px 15px',
             borderRadius: '5px',
-            backgroundColor: '#007bff',
+            backgroundColor: '#92BEFD',
             color: '#fff',
             border: 'none',
             fontSize: '1rem',
@@ -94,7 +98,7 @@ const Login: React.FC = () => {
         </button>
 
         <div style={{ marginTop: '20px', textAlign: 'center', color: '#6c757d', fontSize: '0.9rem' }}>
-          Belum punya akun? <a href="#" style={{ color: '#007bff', textDecoration: 'none' }}>daftar disini</a>
+          Belum punya akun? <a href="#" onClick={handleRegis} style={{ color: '#007bff', textDecoration: 'none', cursor: 'pointer' }}>daftar disini</a>
         </div>
       </div>
     </div>

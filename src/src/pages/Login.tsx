@@ -13,7 +13,7 @@ const Login: React.FC = () => {
     console.log('Logging in with:', username, password);
 
     // Jika login berhasil, arahkan ke halaman utama
-    navigate('/');
+    navigate('/home');
   };
 
   const handleRegis = () => {

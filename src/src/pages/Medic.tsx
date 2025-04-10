@@ -8,7 +8,7 @@ import {
   TextField,
   Chip,
 } from "@mui/material";
-import { ref, onValue } from "firebase/database";
+import { ref, onValue, remove } from "firebase/database";
 import { database } from "../config/Firebase";
 
 interface Patient {
@@ -24,12 +24,13 @@ interface Patient {
 const PatientCard: React.FC<{
   patient: Patient;
   onEdit: (patient: Patient) => void;
-}> = ({ patient, onEdit }) => (
+  onDelete: (patient: Patient) => void;
+}> = ({ patient, onEdit, onDelete }) => (
   <Card
     sx={{
       mb: 2,
       backgroundColor: "#f1f5f9",
-      borderLeft: "5px solid #4caf50", // garis hijau pinggir kiri
+      borderLeft: "5px solid #4caf50",
       boxShadow: 2,
     }}
   >
@@ -42,20 +43,25 @@ const PatientCard: React.FC<{
     >
       <Box>
         <Typography variant="h6">{patient.name}</Typography>
-        <Chip
-          label="Done"
-          color="success"
-          size="small"
-          sx={{ mt: 1 }}
-        />
+        <Chip label="Done" color="success" size="small" sx={{ mt: 1 }} />
       </Box>
-      <Button
-        variant="outlined"
-        color="primary"
-        onClick={() => onEdit(patient)}
-      >
-        LIHAT
-      </Button>
+      <Box>
+        <Button
+          variant="outlined"
+          color="primary"
+          onClick={() => onEdit(patient)}
+          sx={{ mr: 1 }}
+        >
+          LIHAT
+        </Button>
+        <Button
+          variant="outlined"
+          color="error"
+          onClick={() => onDelete(patient)}
+        >
+          HAPUS
+        </Button>
+      </Box>
     </CardContent>
   </Card>
 );
@@ -174,6 +180,24 @@ const Medic: React.FC = () => {
     setSelectedPatient(null);
   };
 
+  const handleDeleteRecord = async (patient: Patient) => {
+    const confirmDelete = window.confirm(
+      `Apakah Anda yakin ingin menghapus data ini?`
+    );
+    if (!confirmDelete) return;
+
+    try {
+      const recordRef = ref(
+        database,
+        `users/mahasiswa/${patient.uid}/record/${patient.id}`
+      );
+      await remove(recordRef);
+      setPatients((prev) => prev.filter((p) => p.id !== patient.id));
+    } catch (error) {
+      console.error("❌ Gagal menghapus data:", error);
+    }
+  };
+
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h5" gutterBottom sx={{ fontWeight: "bold" }}>
@@ -192,6 +216,7 @@ const Medic: React.FC = () => {
               key={patient.id}
               patient={patient}
               onEdit={setSelectedPatient}
+              onDelete={handleDeleteRecord}
             />
           ))}
         </Box>

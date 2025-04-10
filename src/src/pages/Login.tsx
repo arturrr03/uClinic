@@ -1,19 +1,29 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import unklabClinicLogo from '../../assets/unklab-clinic-logo.png';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const [username, setUsername] = useState('');
+  const [nim, setNim] = useState(''); // Changed from username to nim
   const [password, setPassword] = useState('');
 
-  const handleLogin = () => {
-    // Lakukan logika otentikasi di sini
-    // Misalnya, periksa username dan password
-    console.log('Logging in with:', username, password);
+  const handleLogin = async () => {
+    try {
+      const auth = getAuth();
 
-    // Jika login berhasil, arahkan ke halaman utama
-    navigate('/home');
+      // Convert NIM to pseudo-email
+      const pseudoEmail = `${nim}@unklabclinic.com`;
+
+      // Authenticate with pseudo-email and password
+      await signInWithEmailAndPassword(auth, pseudoEmail, password);
+
+      console.log('Login successful with NIM:', nim);
+      navigate('/home'); // Navigate to the home page after successful login
+    } catch (error) {
+      console.error('Error logging in:', error);
+      alert('Failed to login. Please check your NIM and password.');
+    }
   };
 
   const handleRegis = () => {
@@ -38,16 +48,16 @@ const Login: React.FC = () => {
       </div>
       <div style={{ width: '100%', maxWidth: '300px' }}>
         <div style={{ marginBottom: '15px' }}>
-          <label htmlFor="username" style={{ display: 'block', marginBottom: '5px', color: '#495057' }}>
-            Username
+          <label htmlFor="nim" style={{ display: 'block', marginBottom: '5px', color: '#495057' }}>
+            NIM
           </label>
           <input
             type="text"
-            id="username"
+            id="nim"
             className="form-control"
-            placeholder="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Nomor Induk Mahasiswa"
+            value={nim}
+            onChange={(e) => setNim(e.target.value)}
             style={{
               width: '100%',
               padding: '10px',

@@ -10,7 +10,7 @@ import { getDatabase } from "firebase/database";
 const firebaseConfig = {
   apiKey: "AIzaSyCROs8HozO2sVuXPuqYUZTixFp6iFK5nhQ",
   authDomain: "unklabclinic.firebaseapp.com",
-  databaseURL: "https://unklabclinic-default-rtdb.firebaseio.com",
+  databaseURL: "https://unklabclinic-default-rtdb.firebaseio.com/",
   projectId: "unklabclinic",
   storageBucket: "unklabclinic.firebasestorage.app",
   messagingSenderId: "135047637255",

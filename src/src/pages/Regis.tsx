@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import unklabClinicLogo from '../../assets/unklab-clinic-logo.png'; 
+import { auth } from "../config/Firebase"; // Import auth dari Firebase
+import { database } from "../config/Firebase"; // Import database
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { ref, set } from "firebase/database"; // Import fungsi untuk Realtime Database
 
 const Regis: React.FC = () => {
   const navigate = useNavigate();
@@ -8,13 +12,70 @@ const Regis: React.FC = () => {
   const [nim, setNim] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState("");
 
-  const handleCreateAccount = () => {
-    // Lakukan logika pendaftaran akun di sini
-    console.log('Creating account with:', { nama, nim, email, password });
+  const handleCreateAccount = async (e) => {
+    e.preventDefault();
 
-    // Setelah berhasil membuat akun, arahkan ke halaman login
-    navigate('/login');
+    // Validasi input
+    if (!nama || !nim || !email || !password) {
+      alert('Semua field harus diisi.');
+      return;
+    }
+
+    if (!/^\d+$/.test(nim)) {
+      alert('NIM hanya boleh berisi angka.');
+      return;
+    }
+
+    if (password.length < 6) {
+      alert('Password harus memiliki minimal 6 karakter.');
+      return;
+    }
+
+    try {
+      // Konversi NIM menjadi pseudo-email
+      const pseudoEmail = `${nim}@unklabclinic.com`;
+
+      console.log("Mencoba membuat akun dengan email:", pseudoEmail);
+
+      // Buat akun menggunakan Firebase Authentication
+      const userCredential = await createUserWithEmailAndPassword(auth, pseudoEmail, password);
+      const user = userCredential.user;
+
+      console.log("Akun berhasil dibuat. UID:", user.uid);
+
+      // Simpan data pengguna ke Firebase Realtime Database
+      await set(ref(database, `users/${user.uid}`), {
+        nama: nama,
+        nim: nim,
+        email: email,
+        createdAt: new Date().toISOString(), // Tambahkan timestamp
+      });
+
+      console.log("Data pengguna berhasil disimpan ke Realtime Database.");
+
+      // Feedback bahwa akun berhasil dibuat
+      alert('Akun berhasil dibuat! Anda sekarang dapat login.');
+      navigate('/'); // Redirect ke halaman login
+    } catch (err: any) {
+      console.error('Error saat membuat akun:', err);
+
+      // Tangani error spesifik dari Firebase
+      switch (err.code) {
+        case 'auth/email-already-in-use':
+          setError('NIM ini sudah terdaftar.');
+          break;
+        case 'auth/weak-password':
+          setError('Password harus memiliki minimal 6 karakter.');
+          break;
+        case 'auth/invalid-email':
+          setError('Format NIM tidak valid.');
+          break;
+        default:
+          setError('Gagal membuat akun. Silakan coba lagi.');
+      }
+    }
   };
 
   const handleBackToLogin = () => {

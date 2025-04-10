@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -6,18 +6,19 @@ import {
   Card,
   CardContent,
   TextField,
+  Chip,
 } from "@mui/material";
+import { ref, onValue } from "firebase/database";
+import { database } from "../config/Firebase";
 
 interface Patient {
-  id: number;
+  id: string;
+  uid: string;
   name: string;
   complaint: string;
-  hasMedicalRecord: boolean;
-  medicalRecord: {
-    gender: string;
-    age: number;
-    description: string;
-  } | null;
+  gender: string;
+  age: number;
+  description: string;
 }
 
 const PatientCard: React.FC<{
@@ -27,7 +28,9 @@ const PatientCard: React.FC<{
   <Card
     sx={{
       mb: 2,
-      backgroundColor: patient.hasMedicalRecord ? "#f5f5f5" : "#ffcccc",
+      backgroundColor: "#f1f5f9",
+      borderLeft: "5px solid #4caf50", // garis hijau pinggir kiri
+      boxShadow: 2,
     }}
   >
     <CardContent
@@ -39,21 +42,19 @@ const PatientCard: React.FC<{
     >
       <Box>
         <Typography variant="h6">{patient.name}</Typography>
-        <Typography variant="body2" color="text.secondary">
-          {patient.complaint}
-        </Typography>
-        {!patient.hasMedicalRecord && (
-          <Typography variant="body2" color="error">
-            *Belum ada rekam medis
-          </Typography>
-        )}
+        <Chip
+          label="Done"
+          color="success"
+          size="small"
+          sx={{ mt: 1 }}
+        />
       </Box>
       <Button
-        variant={patient.hasMedicalRecord ? "outlined" : "contained"}
-        color={patient.hasMedicalRecord ? "primary" : "success"}
+        variant="outlined"
+        color="primary"
         onClick={() => onEdit(patient)}
       >
-        {patient.hasMedicalRecord ? "Lihat/Edit" : "Tambahkan"}
+        LIHAT
       </Button>
     </CardContent>
   </Card>
@@ -61,31 +62,27 @@ const PatientCard: React.FC<{
 
 const MedicalRecordForm: React.FC<{
   patient: Patient;
-  onSave: (
-    id: number,
-    gender: string,
-    age: number,
-    description: string
-  ) => void;
+  onSave: (p: Patient) => void;
   onCancel: () => void;
 }> = ({ patient, onSave, onCancel }) => {
-  const [gender, setGender] = useState(patient.medicalRecord?.gender || "");
-  const [age, setAge] = useState(patient.medicalRecord?.age || 0);
-  const [description, setDescription] = useState(
-    patient.medicalRecord?.description || ""
-  );
+  const [gender, setGender] = useState(patient.gender);
+  const [age, setAge] = useState(patient.age);
+  const [description, setDescription] = useState(patient.description);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(patient.id, gender, age, description);
+    onSave({
+      ...patient,
+      gender,
+      age,
+      description,
+    });
   };
 
   return (
     <Card sx={{ mt: 2, p: 3 }}>
       <Typography variant="h6" gutterBottom>
-        {patient.hasMedicalRecord
-          ? `Edit Rekam Medis - ${patient.name}`
-          : `Tambah Rekam Medis - ${patient.name}`}
+        Rekam Medis - {patient.name}
       </Typography>
       <Box component="form" onSubmit={handleSubmit}>
         <TextField
@@ -132,45 +129,47 @@ const MedicalRecordForm: React.FC<{
 };
 
 const Medic: React.FC = () => {
-  const [patients, setPatients] = useState<Patient[]>([
-    {
-      id: 1,
-      name: "Richard Lahea",
-      complaint: "Keluhan sakit",
-      hasMedicalRecord: true,
-      medicalRecord: {
-        gender: "Male",
-        age: 30,
-        description: "Sakit kepala berkepanjangan",
-      },
-    },
-    {
-      id: 2,
-      name: "John Doe",
-      complaint: "Keluhan sakit",
-      hasMedicalRecord: false,
-      medicalRecord: null,
-    },
-  ]);
-
+  const [patients, setPatients] = useState<Patient[]>([]);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
 
-  const handleSaveRecord = (
-    id: number,
-    gender: string,
-    age: number,
-    description: string
-  ) => {
-    setPatients((prev) =>
-      prev.map((patient) =>
-        patient.id === id
-          ? {
-              ...patient,
-              hasMedicalRecord: true,
-              medicalRecord: { gender, age, description },
+  useEffect(() => {
+    const mahasiswaRef = ref(database, "users/mahasiswa");
+
+    onValue(mahasiswaRef, (snapshot) => {
+      if (!snapshot.exists()) {
+        console.warn("❌ Tidak ada data mahasiswa.");
+        return;
+      }
+
+      const data = snapshot.val();
+      const result: Patient[] = [];
+
+      Object.entries(data).forEach(([uid, userData]: any) => {
+        const records = userData?.record;
+        if (records) {
+          Object.entries(records).forEach(([recordId, record]: any) => {
+            if (record.status === "done") {
+              result.push({
+                id: recordId,
+                uid: uid,
+                name: record.fullName || "Tanpa Nama",
+                complaint: record.complaint || "-",
+                gender: record.gender || "-",
+                age: parseInt(record.age) || 0,
+                description: record.description || "-",
+              });
             }
-          : patient
-      )
+          });
+        }
+      });
+
+      setPatients(result);
+    });
+  }, []);
+
+  const handleSaveRecord = (updatedPatient: Patient) => {
+    setPatients((prev) =>
+      prev.map((p) => (p.id === updatedPatient.id ? updatedPatient : p))
     );
     setSelectedPatient(null);
   };

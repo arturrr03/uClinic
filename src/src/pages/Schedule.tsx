@@ -1,169 +1,111 @@
-import React, { useState } from "react";
-import {
-  Box,
-  Typography,
-  Button,
-  Card,
-  CardContent,
-  TextField,
-} from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { Box, Typography, Card, CardContent, Button } from "@mui/material";
+import { ref, onValue, update } from "firebase/database";
+import { database } from "../config/Firebase";
 
 interface Appointment {
-  id: number;
-  name: string;
-  complaint: string;
-  time: string;
+  id: string;
+  uid: string;
+  fullName: string;
+  gender: string;
   date: string;
-  description: string;
-  status: string;
+  age?: string;
+  description?: string;
+  status?: string;
 }
 
 const Schedule: React.FC = () => {
-  const [appointments, setAppointments] = useState<Appointment[]>([
-    {
-      id: 1,
-      name: "Richard Lahea",
-      complaint: "Keluhan sakit",
-      time: "--:-- WITA",
-      date: "---/--/----",
-      description: "",
-      status: "pending",
-    },
-    {
-      id: 2,
-      name: "John Doe",
-      complaint: "Keluhan sakit",
-      time: "--:-- WITA",
-      date: "---/--/----",
-      description: "",
-      status: "pending",
-    },
-    {
-      id: 3,
-      name: "Jane Smith",
-      complaint: "Keluhan sakit",
-      time: "--:-- WITA",
-      date: "---/--/----",
-      description: "",
-      status: "pending",
-    },
-  ]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
 
-  const handleSchedule = (
-    id: number,
-    date: string,
-    time: string,
-    description: string
-  ) => {
-    setAppointments((prev) =>
-      prev.map((appointment) =>
-        appointment.id === id
-          ? { ...appointment, status: "scheduled", date, time, description }
-          : appointment
-      )
-    );
+  useEffect(() => {
+    const dbRef = ref(database, "users/mahasiswa");
+
+    onValue(dbRef, (snapshot) => {
+      if (!snapshot.exists()) {
+        console.warn("❌ Tidak ada data di path 'users/mahasiswa'");
+        setAppointments([]);
+        return;
+      }
+
+      const data = snapshot.val();
+      const result: Appointment[] = [];
+
+      Object.entries(data).forEach(([uid, userData]: any) => {
+        const records = userData?.record;
+        if (records) {
+          Object.entries(records).forEach(([recordId, record]: any) => {
+            if (record.status !== "done") {
+              const appointment: Appointment = {
+                id: recordId,
+                uid: uid,
+                fullName: record.fullName || "Tanpa Nama",
+                gender: record.gender || "-",
+                date: record.date || "-",
+                age: record.age || "-",
+                description: record.description || "-",
+                status: record.status || "-",
+              };
+              result.push(appointment);
+            }
+          });
+        }
+      });
+
+      setAppointments(result);
+    }, (error) => {
+      console.error("🔥 Gagal membaca data:", error);
+      setAppointments([]);
+    });
+  }, []);
+
+  const handleConfirm = (appointment: Appointment) => {
+    const path = `users/mahasiswa/${appointment.uid}/record/${appointment.id}`;
+    const dbRef = ref(database, path);
+
+    update(dbRef, { status: "done" })
+      .then(() => {
+        console.log(`✅ Status record ${appointment.id} berhasil diubah menjadi 'done'`);
+        setAppointments((prev) =>
+          prev.filter((a) => a.id !== appointment.id)
+        );
+      })
+      .catch((err) => {
+        console.error("❌ Gagal update status:", err);
+      });
   };
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h5" gutterBottom sx={{ fontWeight: "bold" }}>
-        Konfirmasi Jadwal
+      <Typography variant="h5" gutterBottom>
+        Semua Record Mahasiswa
       </Typography>
-      <Box>
-        {appointments.map((appointment) => (
-          <Card
-            key={appointment.id}
-            sx={{
-              mb: 2,
-              border:
-                appointment.status === "scheduled"
-                  ? "2px solid green"
-                  : "2px solid #ccc",
-              backgroundColor:
-                appointment.status === "scheduled" ? "#b2f5b2" : "#f5f5f5",
-            }}
-          >
+
+      {appointments.length === 0 ? (
+        <Typography>Tidak ada data yang ditemukan.</Typography>
+      ) : (
+        appointments.map((appt) => (
+          <Card key={appt.id} sx={{ mb: 2, p: 1 }}>
             <CardContent>
-              <Typography variant="h6">{appointment.name}</Typography>
-              <Typography variant="body2" color="text.secondary">
-                {appointment.complaint}
-              </Typography>
-              <Typography variant="body2" sx={{ mt: 1 }}>
-                Tanggal: {appointment.date}
-              </Typography>
-              <Typography variant="body2">Jam: {appointment.time}</Typography>
-              <Typography variant="body2">
-                Deskripsi: {appointment.description || "Belum ada deskripsi"}
-              </Typography>
-              {appointment.status === "pending" ? (
-                <Box
-                  component="form"
-                  onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
-                    e.preventDefault();
-                    const formData = new FormData(e.currentTarget);
-                    const date = formData.get("date") as string;
-                    const time = formData.get("time") as string;
-                    const description = formData.get("description") as string;
-                    handleSchedule(appointment.id, date, time, description);
-                  }}
-                  sx={{
-                    mt: 2,
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 2,
-                    maxWidth: "400px", // Membatasi lebar form
-                  }}
+              <Typography variant="h6">{appt.fullName}</Typography>
+              <Typography variant="body2">UID: {appt.uid}</Typography>
+              <Typography variant="body2">Gender: {appt.gender}</Typography>
+              <Typography variant="body2">Tanggal: {appt.date}</Typography>
+              <Typography variant="body2">Deskripsi: {appt.description}</Typography>
+              <Typography variant="body2">Status: {appt.status}</Typography>
+
+              <Box sx={{ mt: 2, textAlign: "right" }}>
+                <Button
+                  variant="contained"
+                  color="success"
+                  onClick={() => handleConfirm(appt)}
                 >
-                  <TextField
-                    name="date"
-                    type="date"
-                    required
-                    margin="normal"
-                    label="Tanggal"
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                  />
-                  <TextField
-                    name="time"
-                    type="time"
-                    required
-                    margin="normal"
-                    label="Jam"
-                    InputLabelProps={{
-                      shrink: true,
-                    }}
-                  />
-                  <TextField
-                    name="description"
-                    type="text"
-                    required
-                    margin="normal"
-                    label="Deskripsi"
-                  />
-                  <Button type="submit" variant="contained" color="primary">
-                    Atur Jadwal
-                  </Button>
-                </Box>
-              ) : (
-                <Typography
-                  variant="body2"
-                  sx={{
-                    mt: 2,
-                    p: 1,
-                    backgroundColor: "#6c757d",
-                    color: "#fff",
-                    borderRadius: "4px",
-                    textAlign: "center",
-                  }}
-                >
-                  Terjadwal
-                </Typography>
-              )}
+                  Konfirmasi
+                </Button>
+              </Box>
             </CardContent>
           </Card>
-        ))}
-      </Box>
+        ))
+      )}
     </Box>
   );
 };

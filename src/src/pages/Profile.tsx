@@ -85,9 +85,6 @@ const Profile: React.FC = () => {
           </Box>
           <Divider sx={{ my: 2 }} />
           <Box sx={{ display: "flex", justifyContent: "center", gap: 2 }}>
-            <Button variant="contained" color="primary">
-              Edit Profil
-            </Button>
             <Button variant="outlined" color="error" onClick={handleLogout}>
               Logout
             </Button>

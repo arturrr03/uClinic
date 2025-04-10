@@ -228,15 +228,15 @@ export default function Frame({ children }) {
         </DrawerHeader>
         <Divider />
         <List>
-          <Link to={'/'} style={{ textDecoration: 'none' }}>
+          <Link to={'/home'} style={{ textDecoration: 'none' }}>
             <ListItem disablePadding>
               <ListItemButton
                 sx={{
-                  color: `${location.pathname === '/' ? '#6DFF59' : 'white'}`,
-                  backgroundColor: `${location.pathname === '/' ? '#72AAFF' : 'none'}`,
+                  color: `${location.pathname === '/home' ? '#6DFF59' : 'white'}`,
+                  backgroundColor: `${location.pathname === '/home' ? '#72AAFF' : 'none'}`,
                 }}
               >
-                <ListItemIcon sx={{ color: `${location.pathname === '/' ? '#6DFF59' : 'white'}` }}>
+                <ListItemIcon sx={{ color: `${location.pathname === '/home' ? '#6DFF59' : 'white'}` }}>
                   <HomeIcon />
                 </ListItemIcon>
                 <ListItemText primary="Home" primaryTypographyProps={{ style: { color: 'white' } }} />

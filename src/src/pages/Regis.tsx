@@ -9,7 +9,7 @@ import { ref, set } from "firebase/database"; // Import fungsi untuk Realtime Da
 const Regis: React.FC = () => {
   const navigate = useNavigate();
   const [nama, setNama] = useState('');
-  const [nim, setNim] = useState('');
+  const [nip, setNip] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState("");
@@ -18,12 +18,12 @@ const Regis: React.FC = () => {
     e.preventDefault();
 
     // Validasi input
-    if (!nama || !nim || !email || !password) {
+    if (!nama || !nip || !email || !password) {
       alert('Semua field harus diisi.');
       return;
     }
 
-    if (!/^\d+$/.test(nim)) {
+    if (!/^\d+$/.test(nip)) {
       alert('NIM hanya boleh berisi angka.');
       return;
     }
@@ -35,7 +35,7 @@ const Regis: React.FC = () => {
 
     try {
       // Konversi NIM menjadi pseudo-email
-      const pseudoEmail = `${nim}@unklabclinic.com`;
+      const pseudoEmail = `${nip}@unklabclinic.com`;
 
       console.log("Mencoba membuat akun dengan email:", pseudoEmail);
 
@@ -45,15 +45,15 @@ const Regis: React.FC = () => {
 
       console.log("Akun berhasil dibuat. UID:", user.uid);
 
-      // Simpan data pengguna ke Firebase Realtime Database
-      await set(ref(database, `users/${user.uid}`), {
+      // Simpan data pengguna ke Firebase Realtime Database di dalam node users/admin
+      await set(ref(database, `users/admin/${user.uid}`), {
         nama: nama,
-        nim: nim,
+        nip: nip,
         email: email,
         createdAt: new Date().toISOString(), // Tambahkan timestamp
       });
 
-      console.log("Data pengguna berhasil disimpan ke Realtime Database.");
+      console.log("Data pengguna berhasil disimpan ke Realtime Database di dalam node users/admin.");
 
       // Feedback bahwa akun berhasil dibuat
       alert('Akun berhasil dibuat! Anda sekarang dapat login.');
@@ -79,7 +79,7 @@ const Regis: React.FC = () => {
   };
 
   const handleBackToLogin = () => {
-    navigate('/login');
+    navigate('/');
   };
 
   return (
@@ -116,15 +116,15 @@ const Regis: React.FC = () => {
         </div>
         <div style={{ marginBottom: '15px' }}>
           <label htmlFor="nim" style={{ display: 'block', marginBottom: '5px', color: '#495057' }}>
-            NIM
+            NIP
           </label>
           <input
             type="text"
             id="nim"
             className="form-control"
-            placeholder="Nomor Induk Mahasiswa"
-            value={nim}
-            onChange={(e) => setNim(e.target.value)}
+            placeholder="Nomor Induk Pegawai"
+            value={nip}
+            onChange={(e) => setNip(e.target.value)}
             style={inputStyle}
           />
         </div>

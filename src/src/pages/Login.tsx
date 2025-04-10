@@ -1,28 +1,43 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import { ref, get } from 'firebase/database'; // Import fungsi untuk membaca data dari Realtime Database
+import { database } from '../config/Firebase'; // Import konfigurasi Firebase
 import unklabClinicLogo from '../../assets/unklab-clinic-logo.png';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const [nim, setNim] = useState(''); // Changed from username to nim
+  const [nip, setNip] = useState('');
   const [password, setPassword] = useState('');
 
   const handleLogin = async () => {
     try {
       const auth = getAuth();
 
-      // Convert NIM to pseudo-email
-      const pseudoEmail = `${nim}@unklabclinic.com`;
+      // Konversi NIM menjadi pseudo-email
+      const pseudoEmail = `${nip}@unklabclinic.com`;
 
-      // Authenticate with pseudo-email and password
-      await signInWithEmailAndPassword(auth, pseudoEmail, password);
+      // Autentikasi dengan pseudo-email dan password
+      const userCredential = await signInWithEmailAndPassword(auth, pseudoEmail, password);
+      const user = userCredential.user;
 
-      console.log('Login successful with NIM:', nim);
-      navigate('/home'); // Navigate to the home page after successful login
+      console.log('Login berhasil dengan NIP:', nip);
+
+      // Periksa apakah pengguna terdaftar di dalam node users/admin
+      const dbRef = ref(database, `users/admin/${user.uid}`);
+      const snapshot = await get(dbRef);
+
+      if (snapshot.exists()) {
+        console.log('Pengguna ditemukan di dalam users/admin:', snapshot.val());
+        navigate('/home'); // Navigasi ke halaman home setelah login berhasil
+      } else {
+        console.error('Pengguna tidak ditemukan di dalam users/admin.');
+        alert('Anda tidak memiliki akses. Silakan hubungi admin.');
+        await auth.signOut(); // Logout pengguna jika tidak terdaftar di users/admin
+      }
     } catch (error) {
-      console.error('Error logging in:', error);
-      alert('Failed to login. Please check your NIM and password.');
+      console.error('Error saat login:', error);
+      alert('Gagal login. Silakan periksa NIP dan password Anda.');
     }
   };
 
@@ -48,16 +63,16 @@ const Login: React.FC = () => {
       </div>
       <div style={{ width: '100%', maxWidth: '300px' }}>
         <div style={{ marginBottom: '15px' }}>
-          <label htmlFor="nim" style={{ display: 'block', marginBottom: '5px', color: '#495057' }}>
-            NIM
+          <label htmlFor="nip" style={{ display: 'block', marginBottom: '5px', color: '#495057' }}>
+            NIP
           </label>
           <input
             type="text"
-            id="nim"
+            id="nip"
             className="form-control"
-            placeholder="Nomor Induk Mahasiswa"
-            value={nim}
-            onChange={(e) => setNim(e.target.value)}
+            placeholder="Nomor Induk Pegawai"
+            value={nip}
+            onChange={(e) => setNip(e.target.value)}
             style={{
               width: '100%',
               padding: '10px',
